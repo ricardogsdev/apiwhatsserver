@@ -1,52 +1,88 @@
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-const fs = require('fs');
-const axios = require('axios');
+const qrcode = require('qrcode');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
-app.use(express.json());
+const clients = {};  // múltiplas sessões
 
-const client = new Client({
-    authStrategy: new LocalAuth({ clientId: "client" }),
-    puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] },
-});
+app.use(bodyParser.json());
+app.use(cors());
 
-client.on('qr', (qr) => {
-    console.log('QR RECEIVED', qr);
-    qrcode.generate(qr, { small: true });
-});
+function createClient(sessionId) {
+    const client = new Client({
+        authStrategy: new LocalAuth({ clientId: sessionId }),
+        puppeteer: { headless: true }
+    });
 
-client.on('ready', () => {
-    console.log('Client is ready!');
-});
+    client.on('qr', qr => {
+        qrcode.toDataURL(qr, (err, url) => {
+            clients[sessionId].qr = url;
+        });
+    });
 
-client.on('disconnected', (reason) => {
-    console.log('Client was logged out', reason);
-    axios.post('http://SEU_BACKEND/webhook/disconnect', { reason })
-        .catch(err => console.error('Erro ao enviar webhook:', err));
+    client.on('ready', () => {
+        clients[sessionId].status = 'inChat';
+    });
+
+    client.on('disconnected', () => {
+        clients[sessionId].status = 'disconnected';
+    });
+
     client.initialize();
+    return client;
+}
+
+app.post('/start', (req, res) => {
+    const { session } = req.body;
+
+    if (!clients[session]) {
+        clients[session] = { status: 'starting' };
+        const client = createClient(session);
+        clients[session].client = client;
+    }
+
+    res.json({ session, status: 'started' });
 });
 
-client.initialize();
+app.get('/getQrCode', (req, res) => {
+    const { session } = req.query;
 
-app.post('/send', async (req, res) => {
-    const { number, message } = req.body;
-    try {
-        const chatId = number.includes('@c.us') ? number : `${number}@c.us`;
-        await client.sendMessage(chatId, message);
-        res.send({ status: 'success', message: 'Message sent' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ status: 'error', message: error.message });
+    if (clients[session] && clients[session].qr) {
+        res.send(clients[session].qr);
+    } else {
+        res.status(404).json({ error: 'QR Code not available' });
     }
 });
 
-app.get('/status', (req, res) => {
-    res.send({ status: 'online' });
+app.post('/getConnectionStatus', (req, res) => {
+    const { session } = req.body;
+    const status = clients[session]?.status || 'disconnected';
+    const qrCode = clients[session]?.qr || null;
+
+    res.json({ status, data: { qrCode } });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.post('/sendText', async (req, res) => {
+    const { session, number, text } = req.body;
+    const sessionkey = req.headers['sessionkey'];
+
+    if (session !== sessionkey) {
+        return res.status(401).json({ status: 'Unauthorized' });
+    }
+
+    const clientObj = clients[session];
+    if (!clientObj || clientObj.status !== 'inChat') {
+        return res.status(404).json({ status: 'NOT FOUND' });
+    }
+
+    try {
+        await clientObj.client.sendMessage(number + '@c.us', text);
+        res.json({ status: 'SENT' });
+    } catch (e) {
+        res.status(500).json({ error: true, message: e.message });
+    }
 });
+
+app.listen(3333, () => console.log('WhatsApp API running on port 3333'));
