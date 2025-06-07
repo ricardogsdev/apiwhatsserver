@@ -15,12 +15,12 @@ const SESSIONS_PATH = path.join(__dirname, 'sessions');
 
 app.use(bodyParser.json());
 //app.use(cors({ origin: '*' }));
-app.use(cors({
+/* app.use(cors({
     origin: '*',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey', 'session', 'Authorization'],
 }));
-app.options('*', cors());
+app.options('*', cors()); */
 
 require('dotenv').config();
 
