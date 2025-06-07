@@ -181,6 +181,11 @@ app.post('/getConnectionStatus', validateSession, async (req, res) => {
         if (state !== 'CONNECTED' && clientObj.qr) {
             response.status = 'waiting_qr';
         }
+         // 🚀 Se ainda não houver QR Code na memória, tentar carregar da sessão
+        if (!response.qrcode) {
+            const sessionData = loadSession(req.sessionName);
+            response.qrcode = sessionData?.qr || clients[req.sessionName]?.qr || null;
+        }
 
         return res.json(response);
     } catch (err) {
