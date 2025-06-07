@@ -90,8 +90,10 @@ function createClient(sessionId) {
     
     const client = new Client({
         authStrategy: new LocalAuth({ clientId: sessionId }),
-        puppeteer: { headless: true, args: ['--no-sandbox'] }
+        puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] }
     });
+
+    client.setMaxListeners(40);
 
     client.on('qr', qr => {
         qrcode.toDataURL(qr, (err, url) => {
@@ -109,8 +111,6 @@ function createClient(sessionId) {
         clients[sessionId].status = 'disconnected';
         saveSession(sessionId, { status: 'disconnected' });
     });
-
-    client.setMaxListeners(40);
 
     client.initialize();
     return client;
