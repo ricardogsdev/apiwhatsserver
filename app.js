@@ -20,6 +20,7 @@ app.use(cors({
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey', 'session', 'Authorization'],
 }));
+app.options('*', cors());
 
 require('dotenv').config();
 
