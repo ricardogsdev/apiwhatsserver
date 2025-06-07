@@ -107,6 +107,8 @@ function createClient(sessionId) {
         saveSession(sessionId, { status: 'disconnected' });
     });
 
+    client.setMaxListeners(40);
+
     client.initialize();
     return client;
 }
