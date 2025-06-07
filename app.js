@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(cors({
     origin: /\.optovision\.com\.br$/, // Permite qualquer subdomínio de optovision.com.br
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey', 'session', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey', 'session', 'Authorization', 'x-csrf-token'],
     credentials: true // Permite envio de cookies ou autenticação
 }));
 
