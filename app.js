@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(cors({
     origin: /\.optovision\.com\.br$/, // Permite qualquer subdomínio de optovision.com.br
     methods: ['GET', 'POST'],
-    allowedHeaders: '*',
+    allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey', 'session', 'Authorization', 'x-csrf-token', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers'],
 }));
 
 require('dotenv').config();
