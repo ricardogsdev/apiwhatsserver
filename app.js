@@ -273,7 +273,7 @@ app.get('/listarSessoes', validateApiToken, (req, res) => {
 
 
 // 🔄 **Ao iniciar a API, carrega todas as sessões salvas**
-app.listen(3333, () => {
-    console.log('WhatsApp API rodando na porta 3333');
+app.listen(3000, () => {
+    console.log('WhatsApp API rodando na porta 3000');
     loadAllSessions();  // 🔄 Carrega todas as sessões salvas na inicialização
 });
