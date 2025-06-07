@@ -14,13 +14,20 @@ const clients = {};
 const SESSIONS_PATH = path.join(__dirname, 'sessions');
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: /\.optovision\.com\.br$/, // Permite todos os subdomínios
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'apitoken', 'sessionkey']
+}));
 require('dotenv').config();
 
 // Garante que a pasta de sessões existe
 if (!fs.existsSync(SESSIONS_PATH)) {
     fs.mkdirSync(SESSIONS_PATH);
 }
+
+
+
 
 // === CONFIGURAÇÃO DO TOKEN ===
 const API_TOKEN = process.env.API_TOKEN;
