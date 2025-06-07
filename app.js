@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+require('events').EventEmitter.defaultMaxListeners = 40;
+process.setMaxListeners(40);
+
 
 const app = express();
 const clients = {};
