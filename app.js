@@ -14,7 +14,7 @@ const clients = {};
 const SESSIONS_PATH = path.join(__dirname, 'sessions');
 
 app.use(bodyParser.json());
-app.use(cors());
+//app.use(cors());
 /* app.use(cors({
     origin: '*',
     methods: ['GET', 'POST'],
